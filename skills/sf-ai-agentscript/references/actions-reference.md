@@ -30,7 +30,7 @@ All actions in Agent Script support these properties:
 
 > **Note**: `label`, `require_user_confirmation`, `include_in_progress_indicator`, and `progress_indicator_message` are valid on action definitions with `target:` but NOT on `@utils.transition` utility actions (see Val_Action_Properties vs Val_Action_Meta_Props).
 
-### Input Properties (TDD Validated v2.2.0)
+### Input Properties
 
 | Property | Type | Description | TDD |
 |----------|------|-------------|-----|
@@ -40,18 +40,19 @@ All actions in Agent Script support these properties:
 | `is_user_input` | Boolean | LLM extracts value from conversation context | v2.2.0 |
 | `complex_data_type_name` | String | Lightning data type mapping | v2.1.0 |
 
-### Output Properties (Updated v2.2.0)
+### Output Properties
 
 | Property | Type | Description | TDD |
 |----------|------|-------------|-----|
 | `description` | String | Explains the output parameter | v1.3.0 |
 | `label` | String | Display name in UI | v2.2.0 |
-| `is_displayable` | Boolean | `False` = hide from user display (standard name for `filter_from_agent`) | v2.2.0 |
+| `filter_from_agent` | Boolean | `True` = hide from user display (GA standard name) | v1.3.0 |
+| `is_displayable` | Boolean | `False` = hide from user (compile-valid alias for `filter_from_agent`) | v2.2.0 |
 | `is_used_by_planner` | Boolean | `True` = LLM can reason about this value for routing decisions | v2.2.0 |
-| `filter_from_agent` | Boolean | Alias for `is_displayable: False` — set `True` to hide sensitive data from LLM | v1.3.0 |
+| `developer_name` | String | Overrides the parameter's developer name | — |
 | `complex_data_type_name` | String | Lightning data type mapping | v2.1.0 |
 
-> **`is_displayable` vs `filter_from_agent`**: Both control the same behavior. `is_displayable: False` is the standard property name (used in SKILL.md and zero-hallucination patterns). `filter_from_agent: True` is an older alias that achieves the same result.
+> **`filter_from_agent` vs `is_displayable`**: Both control the same behavior. `filter_from_agent: True` is the GA standard name (used in official documentation). `is_displayable: False` is a compile-valid alias that achieves the same result.
 
 ### Example with All Properties
 
@@ -104,6 +105,8 @@ AgentScript supports **22+ action target types**. Use the correct protocol for y
 | `retriever` | `retriever` | Knowledge retrieval | RAG/knowledge base queries |
 
 **Target Format**: `<type>://<DeveloperName>` (e.g., `flow://Get_Account_Info`, `standardInvocableAction://sendEmail`)
+
+> 💡 `prompt://` is the official shorthand for `generatePromptResponse://`. Both forms resolve to the same target.
 
 **Common Examples:**
 ```agentscript
@@ -469,7 +472,7 @@ If you're NOT using Agent Script and are building agents through the Agent Build
 
 ## Connection Block (Escalation Routing)
 
-The `connection` block enables escalation to human agents via Omni-Channel. Both singular (`connection`) and plural (`connections`) forms are supported.
+The `connection` block enables escalation to human agents via Omni-Channel. Use `connection messaging:` (singular). The plural `connections:` wrapper is invalid — see [known-issues.md](known-issues.md#issue-16).
 
 ### Basic Syntax
 
@@ -484,19 +487,15 @@ connection messaging:
 
 ### Multiple Channels
 
+> ⚠️ The plural `connections:` wrapper block is **invalid** (see known-issues.md Issue 16). Use separate `connection <channel>:` blocks:
+
 ```agentscript
-# Use plural form for multiple channels
-connections:
-   messaging:
-      escalation_message: "Transferring to messaging agent..."
-      outbound_route_type: "OmniChannelFlow"
-      outbound_route_name: "agent_support_flow"
-      adaptive_response_allowed: True
-   telephony:
-      escalation_message: "Routing to technical support..."
-      outbound_route_type: "OmniChannelFlow"
-      outbound_route_name: "technical_support_flow"
-      adaptive_response_allowed: False
+# Each channel gets its own top-level connection block
+connection messaging:
+   escalation_message: "Transferring to messaging agent..."
+   outbound_route_type: "OmniChannelFlow"
+   outbound_route_name: "flow://Agent_Support_Flow"
+   adaptive_response_allowed: True
 ```
 
 ### Connection Block Properties

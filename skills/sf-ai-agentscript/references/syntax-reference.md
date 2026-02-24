@@ -101,7 +101,12 @@ variables:
   # Mutable: State we track and modify
   failed_attempts: mutable number = 0
   customer_verified: mutable boolean = False
+    label: "Customer Verified"
   order_ids: mutable list[string] = []
+  order_notes: mutable string = ""
+    description: |
+      Notes collected during the order process.
+      May contain multiple lines of customer input.
 
   # Linked: Read-only from external sources
   session_id: linked string
@@ -112,6 +117,8 @@ variables:
     description: "Customer ID from context"
 ```
 
+> 💡 Variables support a `label:` property for UI display names and multiline `description: |` using pipe syntax.
+
 #### Variable Types
 
 | Type | Description | Example |
@@ -121,8 +128,6 @@ variables:
 | `boolean` | True/false flags | `verified: mutable boolean = False` |
 | `object` | Structured data | `data: mutable object = {}` |
 | `date` | Calendar dates | `created: mutable date` |
-| `timestamp` | Date and time | `updated: mutable timestamp` |
-| `currency` | Money values | `amount: mutable currency` |
 | `id` | Unique identifiers | `record_id: mutable id` |
 | `list[T]` | Arrays of type T | `items: mutable list[string] = []` |
 
@@ -134,6 +139,10 @@ variables:
 | `time` | Time of day (action I/O only) |
 | `integer` | Whole numbers (action I/O only) |
 | `long` | Large whole numbers (action I/O only) |
+| `timestamp` | Date and time (action I/O only) |
+| `currency` | Money values (action I/O only) |
+
+> ⚠️ **Undocumented variable types**: `timestamp` and `currency` compile as variable types but are absent from official GA documentation. Prefer `date` for date/time variables and `number` for currency values. These types are reliable for action I/O.
 
 #### Variable Modifiers
 
@@ -171,24 +180,30 @@ knowledge:
 
 ---
 
-### 6. connections: Block (Optional)
+### 6. connection: Block (Optional)
 
 ```yaml
-connections:
-  crm_system:
-    type: "http"
-    credential: "CRM_Named_Credential"
-    base_url: "https://api.example.com/v1"
+# Minimal form (no routing):
+connection messaging:
+   adaptive_response_allowed: True
+
+# Full form with escalation routing:
+connection messaging:
+   outbound_route_type: "OmniChannelFlow"
+   outbound_route_name: "flow://Route_from_Agent"
+   escalation_message: "Connecting you with a specialist."
+   adaptive_response_allowed: False
 ```
 
-#### Connection Types
+> ⚠️ Use `connection messaging:` (singular, NOT `connections:`). The plural `connections:` wrapper is invalid — see [known-issues.md](known-issues.md#issue-16) Issue 16.
 
-| Type | Label | Purpose |
-|------|-------|---------|
-| `http` | API | External REST/SOAP services via Named Credentials |
-| `dataCloud` | DATACLOUD | Customer 360 data for personalization |
-| `mulesoft` | MULESOFT | Enterprise integrations and API orchestration |
-| `flow` | FLOW | Salesforce automation and internal data |
+#### Supported Channels
+
+| Channel | Purpose |
+|---------|---------|
+| `messaging` | Chat/messaging channels (Enhanced Chat, Web Chat, In-App) |
+| `voice` | Voice/phone channels (Service Cloud Voice) |
+| `web` | Web-based channels |
 
 ---
 
@@ -210,6 +225,21 @@ topic main:
 | `description` | Helps LLM understand topic purpose |
 | `reasoning.instructions` | Instructions for this topic |
 | `reasoning.actions` | Available actions in this topic |
+
+#### Topic-Level System Overrides
+
+Topics can override the agent-level `system:` instructions with their own `system:` block:
+
+```yaml
+topic specialized_support:
+   description: "Handles technical support"
+   system: "You are a technical support specialist. Be precise and methodical."
+   reasoning:
+      instructions: |
+         Help with technical issues.
+```
+
+> The topic-level `system:` replaces (not appends to) the agent-level system instructions for that topic's reasoning context.
 
 ---
 
@@ -304,7 +334,7 @@ actions:
     available when @variables.is_authorized == True
 ```
 
-### Action Metadata Properties (TDD Validated v2.2.0)
+### Action Metadata Properties
 
 Action definitions with `target:` support the following metadata properties. These are NOT valid on `@utils.transition` utility actions.
 
@@ -332,8 +362,10 @@ Action definitions with `target:` support the following metadata properties. The
 
 | Property | Type | Notes |
 |----------|------|-------|
-| `is_displayable` | Boolean | `False` = hide from user (alias: `filter_from_agent`) |
+| `filter_from_agent` | Boolean | `True` = hide from user display (GA standard name) |
+| `is_displayable` | Boolean | `False` = hide from user (compile-valid alias for `filter_from_agent`) |
 | `is_used_by_planner` | Boolean | `True` = LLM can reason about value |
+| `developer_name` | String | Overrides the parameter's developer name |
 | `label` | String | Display name |
 | `description` | String | LLM context |
 | `complex_data_type_name` | String | Lightning type mapping |
@@ -414,9 +446,13 @@ topic main:
 
 **Key Rules:**
 - Content goes **directly** under the block (NO `instructions:` wrapper)
-- Supports `set`, `if`, `transition` statements
-- `run` does NOT work reliably in lifecycle blocks (use it in `reasoning.actions:` or `instructions: ->` instead)
+- Reliable primitives: `set`, `if`/`else`, `transition to`
+- `run` has **inconsistent runtime behavior** in lifecycle blocks across bundle types — use it in `reasoning.actions:` or `instructions: ->` instead
+- `transition to` works in `after_reasoning:` blocks
+- If a topic transitions mid-execution, the original topic's `after_reasoning:` does NOT run
 - Both hooks are FREE (no credit cost) — use for data prep, logging, cleanup
+
+> 💡 Official GA docs show `after_reasoning:->` (arrow syntax). Our TDD validated the direct-content form. Both forms may work — we recommend the tested direct-content form.
 
 ---
 
@@ -428,7 +464,7 @@ topic main:
 |----------|----------|--------|
 | `flow://` | Data operations, business logic | ✅ Validated |
 | `apex://` | Custom calculations, validation | ✅ Validated |
-| `generatePromptResponse://` | Grounded LLM responses | ✅ Validated |
+| `prompt://` / `generatePromptResponse://` | Grounded LLM responses | ✅ Validated |
 | `api://` | REST API callouts | ✅ Validated |
 | `retriever://` | RAG knowledge search | ✅ Validated |
 | `externalService://` | Third-party APIs via Named Credential | ✅ Validated |
@@ -449,6 +485,8 @@ topic main:
 | `@topic.X` | Topic delegation (supervision) | ✅ Validated |
 
 > **Note**: Untested targets are documented in the official AGENT_SCRIPT.md rules. They may require specific licenses, org configurations, or future API versions.
+
+> 💡 `prompt://` is the official shorthand for `generatePromptResponse://`. Both forms resolve to the same target. Example: `target: "prompt://Email_Draft_Template"`
 
 ### Utility Actions
 
@@ -471,6 +509,9 @@ topic main:
 | `@session.x` | Reference session data | `@session.sessionID` |
 | `@context.x` | Reference context data | `@context.userProfile` |
 | `@inputs.x` | Reference procedure input | `@inputs.account_number` ⚠️ Procedure context only — see Common Pitfalls |
+| `@system_variables.user_input` | Most recent user utterance | `@system_variables.user_input` |
+
+> 💡 `@system_variables` is a separate namespace from `@variables`. The `user_input` system variable contains the customer's most recent utterance.
 
 ---
 
@@ -610,7 +651,7 @@ start_agent topic_selector:
 | `is` | Identity check | `if @variables.data is None:` |
 | `is not` | Negated identity check | `if @variables.data is not None:` |
 
-> **Note**: Use `!=` for not-equal comparisons. The `<>` operator does NOT compile (TDD validated v1.9.0).
+> **Note**: Use `!=` for not-equal comparisons. The `<>` operator does NOT compile.
 
 ### Logical Operators
 
@@ -716,6 +757,7 @@ actions:
 | `@inputs` in `set` directive | Unknown deploy error | Use `@utils.setVariables` to capture inputs separately, then reference via `@variables` |
 | Bare action name (no prefix) | Action not found / ignored | Always use `@actions.action_name` in `run`, templates, and instruction text |
 | `run @actions.X` for utility | Action not found | `run @actions.X` resolves against topic-level `actions:` with `target:` — use `@utils.setVariables` directly, not via `run` |
+| Null check vs empty string | Wrong comparison for null | Use `is None` for null checks, `== ""` for empty strings — they are different |
 
 ### `@inputs` in `set` — Deploy-Breaking Anti-Pattern
 
@@ -744,6 +786,24 @@ run set_user_name
 run @actions.set_user_name
 | Use {!@actions.add_to_cart} to add items.
 ```
+
+### `is None` vs `== ""` — Different Checks
+
+```yaml
+# ❌ WRONG — checks for empty string, not null
+if @variables.data == "":
+   | Data is missing.
+
+# ✅ CORRECT — checks for null/undefined
+if @variables.data is None:
+   | Data has not been set.
+
+# ✅ CORRECT — checks for empty string
+if @variables.data == "":
+   | Data is set but empty.
+```
+
+> Use `is None` when a variable may not have been set at all. Use `== ""` when checking for an explicitly empty string value.
 
 ### `run @actions.X` vs Reasoning-Level Utilities
 

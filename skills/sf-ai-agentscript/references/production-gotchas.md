@@ -20,13 +20,11 @@
 | Apex actions | 20 | Per action execution |
 | Any other action | 20 | Per action execution |
 
-> **✅ Lifecycle Hooks Validated (v1.3.0)**: The `before_reasoning:` and `after_reasoning:` lifecycle hooks are now TDD-validated. Content goes **directly** under the block (no `instructions:` wrapper). See "Lifecycle Hooks" section below for correct syntax.
+> **✅ Lifecycle Hooks**: The `before_reasoning:` and `after_reasoning:` lifecycle hooks are validated. Content goes **directly** under the block (no `instructions:` wrapper). See "Lifecycle Hooks" section below for correct syntax.
 
 **Cost Optimization Pattern**: Fetch data once in `before_reasoning:`, cache in variables, reuse across topics.
 
 ## Lifecycle Hooks: `before_reasoning:` and `after_reasoning:`
-
-> **TDD Validated (2026-01-20)**: These hooks enable deterministic pre/post-processing around LLM reasoning.
 
 ```yaml
 topic main:
@@ -54,9 +52,10 @@ topic main:
 
 **Key Points:**
 - Content goes **directly** under `before_reasoning:` / `after_reasoning:` (NO `instructions:` wrapper)
-- Supports `set`, `if`, `run` statements (same as procedural `instructions: ->`)
+- Reliable primitives: `set`, `if`/`else`, `transition to`. `run` has inconsistent runtime behavior across bundle types — use it in `reasoning.actions:` or `instructions: ->` instead
 - `before_reasoning:` is FREE (no credit cost) - use for data prep
 - `after_reasoning:` is FREE (no credit cost) - use for logging, cleanup
+- `transition to` works in `after_reasoning:` — but if a topic transitions mid-reasoning, the original topic's `after_reasoning:` does NOT run
 
 **❌ WRONG Syntax (causes compile error):**
 ```yaml
@@ -100,7 +99,7 @@ When defining actions in Agentforce Assets, use these output flags:
 
 | Flag | Effect | Use When |
 |------|--------|----------|
-| `is_displayable: False` | LLM **cannot** show this value to user | Preventing hallucinated responses |
+| `filter_from_agent: True` | LLM **cannot** show this value to user | Preventing hallucinated responses (GA standard) |
 | `is_used_by_planner: True` | LLM **can** reason about this value | Decision-making, routing |
 
 **Zero-Hallucination Intent Classification Pattern:**
@@ -108,7 +107,7 @@ When defining actions in Agentforce Assets, use these output flags:
 # In Agentforce Assets - Action Definition outputs:
 outputs:
    intent_classification: string
-      is_displayable: False       # LLM cannot show this to user
+      filter_from_agent: True     # LLM cannot show this to user (GA standard)
       is_used_by_planner: True    # LLM can use for routing decisions
 
 # In Agent Script - LLM routes but cannot hallucinate:
@@ -124,41 +123,43 @@ topic intent_router:
             transition to @topic.orders
 ```
 
-## Action I/O Metadata Properties (TDD Validated v2.2.0)
+## Action I/O Metadata Properties
 
 > **Complete reference** for all metadata properties available on action definitions, inputs, and outputs.
 
 **Action-Level Properties:**
 
-| Property | Type | Effect | TDD Status |
-|----------|------|--------|------------|
-| `label` | String | Display name in UI | ✅ v2.2.0 |
-| `description` | String | LLM reads this for decision-making | ✅ v1.3.0 |
-| `require_user_confirmation` | Boolean | Request user confirmation before execution | ✅ Compiles (runtime Issue 6) |
-| `include_in_progress_indicator` | Boolean | Show spinner during execution | ✅ v2.2.0 |
-| `progress_indicator_message` | String | Custom spinner text | ✅ v2.2.0 |
+| Property | Type | Effect |
+|----------|------|--------|
+| `label` | String | Display name in UI |
+| `description` | String | LLM reads this for decision-making |
+| `require_user_confirmation` | Boolean | Request user confirmation before execution (compiles; runtime no-op per Issue 6) |
+| `include_in_progress_indicator` | Boolean | Show spinner during execution |
+| `progress_indicator_message` | String | Custom spinner text |
 
 **Input Properties:**
 
-| Property | Type | Effect | TDD Status |
-|----------|------|--------|------------|
-| `description` | String | Explains parameter to LLM | ✅ v1.3.0 |
-| `label` | String | Display name in UI | ✅ v2.2.0 |
-| `is_required` | Boolean | Marks input as mandatory for LLM | ✅ v2.2.0 |
-| `is_user_input` | Boolean | LLM extracts value from conversation | ✅ v2.2.0 |
-| `complex_data_type_name` | String | Lightning type mapping | ✅ v2.1.0 |
+| Property | Type | Effect |
+|----------|------|--------|
+| `description` | String | Explains parameter to LLM |
+| `label` | String | Display name in UI |
+| `is_required` | Boolean | Marks input as mandatory for LLM |
+| `is_user_input` | Boolean | LLM extracts value from conversation |
+| `complex_data_type_name` | String | Lightning type mapping |
 
 **Output Properties:**
 
-| Property | Type | Effect | TDD Status |
-|----------|------|--------|------------|
-| `description` | String | Explains output to LLM | ✅ v1.3.0 |
-| `label` | String | Display name in UI | ✅ v2.2.0 |
-| `is_displayable` | Boolean | `False` = hide from user (alias: `filter_from_agent`) | ✅ v2.2.0 |
-| `is_used_by_planner` | Boolean | `True` = LLM can reason about value | ✅ v2.2.0 |
-| `complex_data_type_name` | String | Lightning type mapping | ✅ v2.1.0 |
+| Property | Type | Effect |
+|----------|------|--------|
+| `description` | String | Explains output to LLM |
+| `label` | String | Display name in UI |
+| `filter_from_agent` | Boolean | `True` = hide from user display (GA standard) |
+| `is_displayable` | Boolean | `False` = hide from user (compile-valid alias) |
+| `is_used_by_planner` | Boolean | `True` = LLM can reason about value |
+| `developer_name` | String | Overrides the parameter's developer name |
+| `complex_data_type_name` | String | Lightning type mapping |
 
-> **Cross-reference**: `filter_from_agent: True` (in actions-reference.md) is equivalent to `is_displayable: False`.
+> **Cross-reference**: `filter_from_agent: True` is the GA standard name. `is_displayable: False` is a compile-valid alias.
 
 **User Input Pattern** (`is_user_input: True`):
 ```yaml

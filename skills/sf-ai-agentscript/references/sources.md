@@ -5,6 +5,7 @@
 | Source | Contribution |
 |--------|--------------|
 | [trailheadapps/agent-script-recipes](https://github.com/trailheadapps/agent-script-recipes) | 20 reference recipes across 4 categories, variable patterns, action target catalog. `.airules/AGENT_SCRIPT.md` rules document contributes error prevention patterns (bare action names, `@inputs` in `set`, `run` vs utility resolution), block ordering spec, and discovery questions. Contributors: pozil, msrivastav13, muenzpraeger, albarivas, charlesw-salesforce (Apache-2.0) |
+| [Official GA Documentation](https://developer.salesforce.com/docs/ai/agentforce/guide/agent-script.html) | GA alignment audit (v2.4.0): `filter_from_agent` as GA standard output property, `@system_variables.user_input`, `prompt://` shorthand, `developer_name` output property, `go_to_` naming convention, `is None` vs `== ""` distinction, topic-level `system:` overrides, variable `label` property, `timestamp`/`currency` type restrictions |
 | Salesforce Official Documentation | Core syntax, API references, deployment guides |
 | TDD Validation (this skill) | 13 validation agents confirming current-release syntax compatibility |
 | Tribal knowledge interviews | Canvas View bugs, VS Code limitations, credit consumption patterns |

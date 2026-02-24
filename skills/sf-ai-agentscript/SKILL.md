@@ -75,11 +75,11 @@ description  → descriptions, description_text, desc_field
 label        → label_text, display_label, label_field
 ```
 
-> **Important distinction (TDD v2.2.0)**: `is_required`, `is_displayable`, `is_used_by_planner`, and `label` are reserved as **variable/field names** but are valid as **action I/O metadata properties**. For example, you cannot name a variable `label`, but you CAN use `label:` as a property on an action definition, input, or output. See [references/feature-validity.md](references/feature-validity.md).
+> **Important distinction**: `is_required`, `is_displayable`, `is_used_by_planner`, and `label` are reserved as **variable/field names** but are valid as **action I/O metadata properties**. For example, you cannot name a variable `label`, but you CAN use `label:` as a property on an action definition, input, or output. See [references/feature-validity.md](references/feature-validity.md).
 
 ### Feature Validity, Data Types & UI Bugs
 
-> See [references/feature-validity.md](references/feature-validity.md) for the full TDD v2.2.0 feature validity by context table (which properties work on `@utils.transition` vs target-backed actions).
+> See [references/feature-validity.md](references/feature-validity.md) for the full feature validity by context table (which properties work on `@utils.transition` vs target-backed actions).
 
 > See [references/complex-data-types.md](references/complex-data-types.md) for the `complex_data_type_name` mapping table and Agent Script → Lightning type mapping.
 
@@ -91,12 +91,12 @@ label        → label_text, display_label, label_field
 
 ## 💰 PRODUCTION GOTCHAS
 
-> See [references/production-gotchas.md](references/production-gotchas.md) for the full production guide including: credit consumption table, lifecycle hooks (`before_reasoning:`/`after_reasoning:` syntax), supervision vs handoff, zero-hallucination routing with `is_displayable`/`is_used_by_planner`, action I/O metadata properties (TDD v2.2.0), action chaining, latch variable pattern, loop protection, token limits, progress indicators, VS Code limitations, and language block quirks.
+> See [references/production-gotchas.md](references/production-gotchas.md) for the full production guide including: credit consumption table, lifecycle hooks (`before_reasoning:`/`after_reasoning:` syntax), supervision vs handoff, zero-hallucination routing with `filter_from_agent`/`is_used_by_planner`, action I/O metadata properties, action chaining, latch variable pattern, loop protection, token limits, progress indicators, VS Code limitations, and language block quirks.
 
 **Key highlights:**
 - Framework operations (`@utils.*`, `if`/`else`, `set`, lifecycle hooks) are **FREE** — only Flow/Apex/API actions cost 20 credits each
 - `before_reasoning:`/`after_reasoning:` content goes **directly** under the block (NO `instructions:` wrapper)
-- Use `is_displayable: False` + `is_used_by_planner: True` on outputs for zero-hallucination routing
+- Use `filter_from_agent: True` + `is_used_by_planner: True` on outputs for zero-hallucination routing
 
 ### Cross-Skill Orchestration
 
@@ -122,6 +122,7 @@ knowledge:     # 5. Optional: Knowledge base config
 language:      # 6. Optional: Locale settings
 start_agent:   # 7. Required: Entry point (exactly one)
 topic:         # 8. Required: Conversation topics (one or more)
+# Note: Topics can override agent-level system: with a topic-level system: block
 ```
 
 ### Config Block Field Names (CRITICAL)
@@ -175,10 +176,10 @@ config:
 ### Variable Types
 | Modifier | Behavior | Supported Types | Default Required? |
 |----------|----------|-----------------|-------------------|
-| `mutable` | Read/write state | `string`, `number`, `boolean`, `object`, `date`, `timestamp`, `currency`, `id`, `list[T]` | ✅ Yes |
-| `linked` | Read-only from source | `string`, `number`, `boolean`, `date`, `timestamp`, `currency`, `id` | ❌ No (has `source:`) |
+| `mutable` | Read/write state | `string`, `number`, `boolean`, `object`, `date`, `id`, `list[T]` | ✅ Yes |
+| `linked` | Read-only from source | `string`, `number`, `boolean`, `date`, `id` | ❌ No (has `source:`) |
 
-> ⚠️ **Linked variables CANNOT use `object` or `list` types**. `datetime`, `time`, `integer`, `long` are valid for action I/O only — NOT for variables. See [references/actions-reference.md](references/actions-reference.md) for the full type matrix.
+> ⚠️ **Linked variables CANNOT use `object` or `list` types**. `timestamp`, `currency`, `datetime`, `time`, `integer`, `long` compile but are absent from official GA variable type docs — prefer `date` for date/time. These types are valid for action I/O only. See [references/actions-reference.md](references/actions-reference.md) for the full type matrix.
 
 ### Connection Block (Escalation Routing)
 
@@ -358,7 +359,7 @@ sf data query -q "SELECT Username FROM User WHERE Profile.Name = 'Einstein Agent
 | Need | Document | Description |
 |------|----------|-------------|
 | Production gotchas | [references/production-gotchas.md](references/production-gotchas.md) | Credits, lifecycle hooks, supervision, I/O metadata, latch pattern, limits |
-| Feature validity | [references/feature-validity.md](references/feature-validity.md) | TDD v2.2.0 property validity by context |
+| Feature validity | [references/feature-validity.md](references/feature-validity.md) | Property validity by context |
 | Data type mapping | [references/complex-data-types.md](references/complex-data-types.md) | `complex_data_type_name` + Lightning type mapping |
 | CustomerWebClient | [references/customer-web-client.md](references/customer-web-client.md) | Post-publish 6-step patch workflow |
 | Scoring rubric | [references/scoring-rubric.md](references/scoring-rubric.md) | 100-point scoring system details |

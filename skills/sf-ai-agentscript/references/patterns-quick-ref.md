@@ -472,6 +472,9 @@ reasoning:
 | Topic name | snake_case | `order_management` |
 | Variable name | snake_case | `user_email` |
 | Action name | snake_case | `get_account_details` |
+| Transition action name | `go_to_` prefix | `go_to_checkout`, `go_to_support` |
+
+> 💡 Official GA docs recommend naming transition actions with a `go_to_` prefix for clarity (e.g., `go_to_checkout: @utils.transition to @topic.checkout`).
 
 ---
 
@@ -739,6 +742,8 @@ instructions: ->
 | Simple text descriptions | Values with specific formats (dates, IDs) |
 
 **Decision Rule:** If invalid input would cause downstream failure, use deterministic collection.
+
+> ⚠️ **Chained action restriction**: Slot filling (`...`) works for top-level action inputs but NOT for chained action inputs (via `run`). Chained actions run deterministically and cannot use LLM slot-filling.
 
 ---
 

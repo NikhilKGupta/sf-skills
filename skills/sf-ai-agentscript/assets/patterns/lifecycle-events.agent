@@ -16,6 +16,8 @@
 #   1. Use "transition to" NOT "@utils.transition to" for transitions
 #   2. The pipe (|) command is NOT supported in lifecycle blocks
 #   3. after_reasoning may NOT run if a transition occurs mid-topic
+#   4. `run` has inconsistent runtime behavior in lifecycle blocks —
+#      reliable primitives are `set`, `if`/`else`, `transition to`
 #
 # ★ Common Use Cases:
 #   - Increment conversation turn counter

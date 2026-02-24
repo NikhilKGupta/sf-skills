@@ -155,7 +155,7 @@
 - **Affects**: Actions returning large payloads (>50KB response data)
 - **Symptom**: When an action returns a large response payload, subsequent variable access may return null or incomplete data. State appears to lose previously stored values.
 - **Root Cause**: Action output data accumulates in conversation context without compaction. Very large responses may push earlier state data beyond the context window boundary.
-- **Workaround**: Design Flow/Apex actions to return minimal, summarized data. Use `is_displayable: False` on outputs the LLM doesn't need. Avoid `SELECT *` patterns in data retrieval.
+- **Workaround**: Design Flow/Apex actions to return minimal, summarized data. Use `filter_from_agent: True` on outputs the LLM doesn't need. Avoid `SELECT *` patterns in data retrieval.
 - **Open Questions**: Will automatic context compaction be added for action outputs?
 
 ---

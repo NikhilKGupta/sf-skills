@@ -179,7 +179,6 @@ actions:
         description: "The Case record ID"
     outputs:
       promptResponse: string
-        is_displayable: True
     target: "generatePromptResponse://Generate_Case_Summary"
 ```
 
