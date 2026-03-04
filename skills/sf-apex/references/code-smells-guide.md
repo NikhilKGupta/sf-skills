@@ -381,7 +381,9 @@ if (account.Type == 'Enterprise' &&
 }
 ```
 
-### After: Named Boolean Variables
+### Step 1: Named Boolean Variables
+
+_Improves readability by naming each condition, but the logic still sits inline — the reader must parse it even if they don't care about the details._
 
 ```apex
 Boolean isEnterpriseCustomer = account.Type == 'Enterprise';
@@ -404,7 +406,34 @@ if (isStrategicAccount) {
 }
 ```
 
-### Even Better: Domain Class
+### Step 2: Extract Method (Recommended)
+
+_Move the decision behind a single descriptive method name. Callers see **what** is being checked; only maintainers who open the method see **how**._
+
+```apex
+// In the same class — no new file needed
+private Boolean isStrategicAccount(Account account) {
+    Boolean isEnterpriseCustomer = account.Type == 'Enterprise';
+    Boolean isHighValue = account.AnnualRevenue > 1000000;
+    Boolean isLargeCompany = account.NumberOfEmployees > 500;
+    Boolean isTargetIndustry = account.Industry == 'Technology' ||
+                               account.Industry == 'Finance';
+    Boolean isDomestic = account.BillingCountry == 'United States';
+    Boolean isHotLead = account.Rating == 'Hot';
+
+    return isEnterpriseCustomer && isHighValue && isLargeCompany &&
+           isTargetIndustry && isDomestic && isHotLead;
+}
+
+// Clean call site — one line, self-documenting
+if (isStrategicAccount(account)) {
+    processStrategicAccount(account);
+}
+```
+
+### Step 3: Domain Rules Class
+
+_Best for rules reused across triggers, batch jobs, and flows._
 
 ```apex
 // Reusable business rules
