@@ -565,7 +565,8 @@ def fetch_latest_commit_sha(ref: str = "main") -> Optional[str]:
     try:
         url = f"{GITHUB_API_URL}/commits/{ref}"
         req = urllib.request.Request(url, headers={
-            "Accept": "application/vnd.github.sha"
+            "Accept": "application/vnd.github.sha",
+            "If-None-Match": "",
         })
         with urllib.request.urlopen(req, timeout=10, context=_get_ssl_context()) as response:
             return response.read().decode().strip()
@@ -656,8 +657,12 @@ def needs_update() -> Tuple[bool, str, Dict[str, Any]]:
         if local_sha is None:
             return True, UPDATE_REASON_ENABLE_SHA_TRACKING, details
 
-        # SHA comparison (only if we could fetch remote SHA)
-        if remote_sha and local_sha != remote_sha:
+        # SHA comparison
+        if remote_sha is None:
+            # Could not fetch remote SHA — can't confirm up-to-date
+            return False, UPDATE_REASON_ERROR, details
+
+        if local_sha != remote_sha:
             return True, UPDATE_REASON_CONTENT_CHANGED, details
 
     # Up to date
@@ -2591,6 +2596,10 @@ def cmd_update(dry_run: bool = False, force: bool = False, force_update: bool = 
     # Handle network error
     if reason == UPDATE_REASON_ERROR:
         print_warning("Could not check for updates (network error)")
+        if not details.get("remote_sha"):
+            print_info("Could not fetch latest commit SHA from GitHub API")
+            print_info("This may be due to GitHub CDN caching or network issues")
+            print_info("Try again in a few minutes, or use --force-update to reinstall")
         return 1
 
     # Handle up-to-date
