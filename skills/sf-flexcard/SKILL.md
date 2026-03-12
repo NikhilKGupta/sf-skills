@@ -10,13 +10,11 @@ description: >
   DO NOT TRIGGER when: building OmniScripts (use sf-omniscript), creating Integration
   Procedures (use sf-integration-procedure), or analyzing dependencies
   (use sf-omnistudio-analyze).
-version: 1.0
 license: MIT
 metadata:
+  version: "1.0.0"
   author: "weytani"
   scoring: "130 points across 7 categories"
-  last_validated: "2026-03-06"
-tags: [salesforce, omnistudio, flexcard, ui-card, data-binding, slds]
 ---
 
 <!-- ABOUTME: OmniStudio FlexCard creation and validation skill with 130-point scoring across 7 categories. -->
@@ -58,7 +56,7 @@ FlexCards consume data from Integration Procedures and can launch OmniScripts. B
 
 | Insight | Detail |
 |---------|--------|
-| **Definition field** | The `Definition` field on `OmniUiCard` contains the complete FlexCard JSON definition including layout, data sources, states, and actions |
+| **Configuration fields** | `OmniUiCard` uses `DataSourceConfig` for data source bindings and `PropertySetConfig` for card layout, states, and actions. There is NO `Definition` field on `OmniUiCard` in Core namespace. |
 | **Data source binding** | Data sources bind to Integration Procedures for live data; the IP must be active and deployed before the FlexCard can retrieve data |
 | **Child card embedding** | FlexCards can embed other FlexCards as child cards, enabling composite layouts with shared or independent data sources |
 | **OmniScript launching** | FlexCards can launch OmniScripts via action buttons, passing context data from the card's data source into the OmniScript's input |
@@ -167,7 +165,7 @@ Avoid these patterns when generating FlexCard definitions:
 
 ## Scoring Rubric (130 Points)
 
-All FlexCards are validated against 7 categories. **110+ Production-ready | 90+ Good | 70+ Functional | <70 Needs work.**
+All FlexCards are validated against 7 categories. **Thresholds**: ✅ 90+ (Deploy) | ⚠️ 67-89 (Review) | ❌ <67 (Block - fix required)
 
 | Category | Points | Criteria |
 |----------|--------|----------|
@@ -250,7 +248,7 @@ All FlexCards are validated against 7 categories. **110+ Production-ready | 90+ 
 
 ```bash
 # Query active FlexCards in the org
-sf data query -q "SELECT Id,Name,Definition,IsActive FROM OmniUiCard WHERE IsActive=true" -o <org>
+sf data query -q "SELECT Id,Name,DataSourceConfig,PropertySetConfig,IsActive FROM OmniUiCard WHERE IsActive=true" -o <org>
 
 # Retrieve a specific FlexCard by name
 sf project retrieve start -m OmniUiCard:<Name> -o <org>
@@ -269,21 +267,29 @@ sf project deploy start -m OmniUiCard -m OmniIntegrationProcedure -m OmniScript 
 
 ## Data Source Binding
 
-### FlexCard Definition JSON Structure
+### FlexCard Data Source Configuration
 
-The `Definition` field on `OmniUiCard` contains the complete FlexCard configuration as JSON. The data sources array defines where the card gets its data.
+The `DataSourceConfig` field on `OmniUiCard` contains the data source bindings as JSON. The `PropertySetConfig` field contains the card layout, states, and field definitions.
+
+> **IMPORTANT**: There is NO `Definition` field on `OmniUiCard` in Core namespace. Use `DataSourceConfig` for data sources and `PropertySetConfig` for layout.
 
 ```json
 {
   "dataSource": {
-    "type": "IntegrationProcedure",
+    "type": "IntegrationProcedures",
     "value": {
       "ipMethod": "Type_SubType",
+      "vlocityAsync": false,
       "inputMap": {
         "recordId": "{recordId}"
       },
-      "resultListPath": "records"
-    }
+      "resultVar": ""
+    },
+    "orderBy": {
+      "name": "",
+      "isReverse": ""
+    },
+    "contextVariables": []
   }
 }
 ```
@@ -292,11 +298,11 @@ The `Definition` field on `OmniUiCard` contains the complete FlexCard configurat
 
 | Type | `dataSource.type` | When to Use |
 |------|-------------------|-------------|
-| **Integration Procedure** | `IntegrationProcedure` | Primary pattern; calls an IP for live data |
+| **Integration Procedure** | `IntegrationProcedures` (plural, capital P) | Primary pattern; calls an IP for live data |
 | **SOQL** | `SOQL` | Direct query (use sparingly; prefer IP for abstraction) |
 | **Apex Remote** | `ApexRemote` | Custom Apex class invocation |
 | **REST** | `REST` | External API call via Named Credential |
-| **Custom** | `Custom` | Custom data provider |
+| **Custom** | `Custom` | Custom data provider (pass JSON body directly) |
 
 ### Field Mapping from IP Response
 
@@ -374,6 +380,9 @@ Pass context from the hosting page into the IP data source:
 **Required**: Target org with OmniStudio (Industries Cloud) license, `sf` CLI authenticated
 **For Data Sources**: Active Integration Procedures deployed to the target org
 **For Actions**: Active OmniScripts deployed (if action buttons launch OmniScripts)
+**Scoring**: Block deployment if score < 67
+
+**Creating FlexCards programmatically**: Use REST API (`sf api request rest --method POST --body @file.json`). Required fields: `Name`, `VersionNumber`, `OmniUiCardType` (e.g., `Child`). Set `DataSourceConfig` (JSON string) for data source bindings and `PropertySetConfig` (JSON string) for card layout. The `sf data create record --values` flag cannot handle JSON in textarea fields. Activate by updating `IsActive=true` after creation.
 
 ---
 

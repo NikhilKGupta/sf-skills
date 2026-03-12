@@ -11,13 +11,11 @@ description: >
   DO NOT TRIGGER when: building FlexCards (use sf-flexcard), creating Integration
   Procedures directly (use sf-integration-procedure), or analyzing dependencies
   (use sf-omnistudio-analyze).
-version: 1.0
 license: MIT
 metadata:
+  version: "1.0.0"
   author: "weytani"
   scoring: "120 points across 6 categories"
-  last_validated: "2026-03-06"
-tags: [salesforce, omnistudio, omniscript, guided-process, digital-experience]
 ---
 
 # OmniStudio OmniScript Creation and Validation
@@ -26,7 +24,7 @@ Expert OmniStudio OmniScript builder for declarative, step-based guided digital 
 
 ## Quick Reference
 
-**Scoring**: 120 points across 6 categories. Minimum 96 (80%) for deployment.
+**Scoring**: 120 points across 6 categories. **Thresholds**: ✅ 90+ (Deploy) | ⚠️ 67-89 (Review) | ❌ <67 (Block - fix required)
 
 ---
 
@@ -53,7 +51,7 @@ OmniScripts consume Integration Procedures and DataRaptors. Build those FIRST. F
 |---------|---------|
 | **Type/SubType/Language triplet** | Uniquely identifies an OmniScript. All three values are required and form the composite key. Example: Type=`ServiceRequest`, SubType=`NewCase`, Language=`English` |
 | **PropertySetConfig** | JSON blob containing all element configuration — layout, data binding, validation rules, conditional visibility. This is where the real logic lives |
-| **Core namespace** | OmniProcess with `OmniProcessType='OmniScript'`. Elements are child OmniProcessElement records |
+| **Core namespace** | OmniProcess with `IsIntegrationProcedure = false` (equivalently `OmniProcessType='OmniScript'`). Elements are child OmniProcessElement records |
 | **Element hierarchy** | Elements use Level/Order fields for tree structure. Level 0 = Steps, Level 1+ = elements within steps. Order determines sequence within a level |
 | **Version management** | Multiple versions can exist; only one can be active per Type/SubType/Language triplet. Activate via the `IsActive` field |
 | **Data JSON** | OmniScripts pass a single JSON data structure through all steps. Elements read from and write to this shared JSON via merge field syntax |
@@ -336,4 +334,6 @@ sf data query -q "SELECT Id,VersionNumber,IsActive,LastModifiedDate FROM OmniPro
 
 ## Notes
 
-**Dependencies** (required): sf-datamapper, sf-integration-procedure | **Dependencies** (optional): sf-deploy, sf-flexcard, sf-omnistudio-analyze | **API**: 66.0 | **Mode**: Strict (warnings block) | **Reference docs**: See `references/` for element types and best practices
+**Dependencies** (required): sf-datamapper, sf-integration-procedure | **Dependencies** (optional): sf-deploy, sf-flexcard, sf-omnistudio-analyze | **API**: 66.0 | **Mode**: Strict (warnings block) | **Scoring**: Block deployment if score < 67 | **Reference docs**: See `references/` for element types and best practices
+
+**Creating OmniScripts programmatically**: Use REST API (`sf api request rest --method POST --body @file.json`). Required fields: `Name`, `Type`, `SubType`, `Language`, `VersionNumber`. OmniScripts default to `IsIntegrationProcedure=false` (do NOT set `OmniProcessType` — it is computed). The `sf data create record --values` flag cannot handle JSON textarea fields like `PropertySetConfig`. Create child `OmniProcessElement` records via REST API for each Step and element.

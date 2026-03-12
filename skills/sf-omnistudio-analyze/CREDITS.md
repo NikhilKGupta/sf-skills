@@ -36,7 +36,7 @@ Key contributions:
 - Core namespace object model (OmniProcess, OmniUiCard, OmniDataTransform, OmniProcessElement)
 - PropertySetConfig and Definition JSON schema design
 - Namespace migration architecture (Vlocity → Core)
-- TypeCategory filtering for OmniScripts vs Integration Procedures
+- `IsIntegrationProcedure` boolean discriminator on `OmniProcess` for distinguishing OmniScripts from Integration Procedures
 
 ---
 

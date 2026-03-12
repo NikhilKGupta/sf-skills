@@ -1,6 +1,6 @@
+<!-- Parent: sf-omniscript/SKILL.md -->
 <!-- ABOUTME: Complete OmniScript element type reference with PropertySetConfig structure for each element. -->
 <!-- ABOUTME: Covers container, input, display, action, and logic elements with configuration details. -->
-<!-- Parent: sf-omniscript/SKILL.md -->
 # OmniScript Element Type Reference
 
 > **Applies to**: OmniStudio OmniScripts (OmniProcessType='OmniScript')

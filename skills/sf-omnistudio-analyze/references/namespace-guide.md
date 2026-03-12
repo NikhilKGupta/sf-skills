@@ -1,3 +1,4 @@
+<!-- Parent: sf-omnistudio-analyze/SKILL.md -->
 <!-- ABOUTME: Complete namespace mapping reference for OmniStudio objects and fields. -->
 <!-- ABOUTME: Covers Core, vlocity_cmt, and vlocity_ins namespaces with detection algorithm details. -->
 

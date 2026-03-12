@@ -1,3 +1,4 @@
+<!-- Parent: sf-datamapper/SKILL.md -->
 <!-- ABOUTME: Best practices for OmniStudio Data Mapper (formerly DataRaptor) development. -->
 <!-- ABOUTME: Covers type selection, field mapping patterns, query optimization, and performance guidance. -->
 

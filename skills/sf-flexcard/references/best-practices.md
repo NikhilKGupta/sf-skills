@@ -1,3 +1,4 @@
+<!-- Parent: sf-flexcard/SKILL.md -->
 <!-- ABOUTME: Best practices reference for OmniStudio FlexCard design, styling, accessibility, and performance. -->
 <!-- ABOUTME: Covers layout patterns, data source optimization, SLDS compliance, and child card composition. -->
 

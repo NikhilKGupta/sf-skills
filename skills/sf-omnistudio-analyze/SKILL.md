@@ -10,12 +10,10 @@ description: >
   DO NOT TRIGGER when: authoring OmniScripts (use sf-omniscript), building FlexCards
   (use sf-flexcard), creating Integration Procedures (use sf-integration-procedure),
   or configuring Data Mappers (use sf-datamapper).
-version: 1.0
 license: MIT
 metadata:
+  version: "1.0.0"
   author: "weytani"
-  last_validated: "2026-03-06"
-tags: [salesforce, omnistudio, analysis, dependencies, namespace, impact-analysis, mermaid]
 ---
 
 <!-- ABOUTME: Cross-cutting OmniStudio analysis skill for namespace detection and dependency mapping. -->
@@ -52,7 +50,7 @@ Expert OmniStudio analyst specializing in namespace detection, dependency mappin
 | Three namespaces coexist | Core (OmniProcess), vlocity_cmt (vlocity_cmt__OmniScript__c), vlocity_ins (vlocity_ins__OmniScript__c) |
 | Dependencies are stored in JSON | PropertySetConfig (elements), Definition (FlexCards), InputObjectName/OutputObjectName (Data Mappers) |
 | Circular references are possible | OmniScript A → IP B → OmniScript A via embedded call |
-| FlexCard data sources are typed | `dataSources[].type === 'IntegrationProcedure'` in Definition JSON |
+| FlexCard data sources are typed | `dataSource.type === 'IntegrationProcedures'` (plural) in DataSourceConfig JSON |
 | Active vs Draft matters | Only active components participate in runtime dependency chains |
 
 ---
@@ -112,7 +110,7 @@ Using the detected namespace, query each component type:
 SELECT Id, Type, SubType, Language, IsActive, VersionNumber,
        PropertySetConfig, LastModifiedDate
 FROM OmniProcess
-WHERE TypeCategory = 'OmniScript'
+WHERE IsIntegrationProcedure = false
 ORDER BY Type, SubType, Language, VersionNumber DESC
 ```
 
@@ -121,17 +119,19 @@ ORDER BY Type, SubType, Language, VersionNumber DESC
 SELECT Id, Type, SubType, Language, IsActive, VersionNumber,
        PropertySetConfig, LastModifiedDate
 FROM OmniProcess
-WHERE TypeCategory = 'IntegrationProcedure'
+WHERE IsIntegrationProcedure = true
 ORDER BY Type, SubType, Language, VersionNumber DESC
 ```
 
 **FlexCards** (Core example):
 ```soql
-SELECT Id, Name, IsActive, Definition, AuthorName,
-       LastModifiedDate
+SELECT Id, Name, IsActive, DataSourceConfig, PropertySetConfig,
+       AuthorName, LastModifiedDate
 FROM OmniUiCard
 ORDER BY Name
 ```
+
+> **IMPORTANT**: The `OmniUiCard` object does NOT have a `Definition` field. Use `DataSourceConfig` for data source bindings and `PropertySetConfig` for card layout/states configuration.
 
 **Data Mappers** (Core example):
 ```soql
@@ -142,15 +142,17 @@ ORDER BY Name
 
 **Data Mapper Items** (for object dependency extraction):
 ```soql
-SELECT Id, OmniDataTransformId, InputObjectName, OutputObjectName,
+SELECT Id, OmniDataTransformationId, InputObjectName, OutputObjectName,
        InputObjectQuerySequence
 FROM OmniDataTransformItem
-WHERE OmniDataTransformId IN ({datamapper_ids})
+WHERE OmniDataTransformationId IN ({datamapper_ids})
 ```
+
+> **IMPORTANT**: The foreign key field is `OmniDataTransformationId` (full word "Transformation"), NOT `OmniDataTransformId`.
 
 **CLI Command pattern**:
 ```bash
-sf data query --query "SELECT Id, Type, SubType, Language, IsActive FROM OmniProcess WHERE TypeCategory = 'OmniScript'" \
+sf data query --query "SELECT Id, Type, SubType, Language, IsActive FROM OmniProcess WHERE IsIntegrationProcedure = false" \
   --target-org myorg --json
 ```
 
@@ -205,20 +207,22 @@ For each OmniProcessElement:
 
 #### FlexCard Data Source Parsing
 
-FlexCards store their configuration in the `Definition` JSON field:
+FlexCards store their data source configuration in the `DataSourceConfig` JSON field (NOT `Definition` — that field does not exist on `OmniUiCard`):
 
 ```
-Parse Definition JSON:
-  1. Access dataSources array
-  2. For each dataSource where type === 'IntegrationProcedure':
-     - Extract dataSource.value.key (IP Type_SubType)
+Parse DataSourceConfig JSON:
+  1. Access dataSource object (singular, not array)
+  2. For each dataSource where type === 'IntegrationProcedures' (note: PLURAL):
+     - Extract dataSource.value.ipMethod (IP Type_SubType)
      - Add edge: FlexCard → Integration Procedure
-  3. For each dataSource where type === 'Apex':
+  3. For each dataSource where type === 'ApexRemote':
      - Extract dataSource.value.className
      - Add edge: FlexCard → Apex Class
-  4. For each childCard reference:
+  4. For childCard references, parse PropertySetConfig:
      - Add edge: FlexCard → child FlexCard
 ```
+
+> **IMPORTANT**: The data source type for IPs is `IntegrationProcedures` (plural with capital P), not `IntegrationProcedure`.
 
 #### Data Mapper Object Dependencies
 
@@ -362,8 +366,9 @@ Complete mapping of OmniStudio objects and fields across all three namespaces:
 | Is active | `IsActive` | `vlocity_cmt__IsActive__c` | `vlocity_ins__IsActive__c` |
 | Version | `VersionNumber` | `vlocity_cmt__Version__c` | `vlocity_ins__Version__c` |
 | Element config | `PropertySetConfig` | `vlocity_cmt__PropertySet__c` | `vlocity_ins__PropertySet__c` |
-| Type category | `TypeCategory` | (filter by `vlocity_cmt__IsIntegrationProcedure__c`) | (filter by `vlocity_ins__IsIntegrationProcedure__c`) |
-| FlexCard definition | `Definition` | `vlocity_cmt__Definition__c` | `vlocity_ins__Definition__c` |
+| Is Integration Procedure | `IsIntegrationProcedure` | `vlocity_cmt__IsIntegrationProcedure__c` | `vlocity_ins__IsIntegrationProcedure__c` |
+| FlexCard data sources | `DataSourceConfig` | `vlocity_cmt__Definition__c` | `vlocity_ins__Definition__c` |
+| FlexCard layout/states | `PropertySetConfig` | (same field) | (same field) |
 | DM input object | `InputObjectName` (on Item) | `vlocity_cmt__InterfaceObject__c` | `vlocity_ins__InterfaceObject__c` |
 | DM output object | `OutputObjectName` (on Item) | `vlocity_cmt__TargetFieldObjectType__c` | `vlocity_ins__TargetFieldObjectType__c` |
 
@@ -385,11 +390,11 @@ echo "NOT_INSTALLED"
 ### Component Inventory (Core Namespace)
 ```bash
 # Count OmniScripts
-sf data query --query "SELECT COUNT() FROM OmniProcess WHERE TypeCategory = 'OmniScript'" \
+sf data query --query "SELECT COUNT() FROM OmniProcess WHERE IsIntegrationProcedure = false" \
   --target-org myorg --json
 
 # Count Integration Procedures
-sf data query --query "SELECT COUNT() FROM OmniProcess WHERE TypeCategory = 'IntegrationProcedure'" \
+sf data query --query "SELECT COUNT() FROM OmniProcess WHERE IsIntegrationProcedure = true" \
   --target-org myorg --json
 
 # Count FlexCards
@@ -405,12 +410,12 @@ sf data query --query "SELECT COUNT() FROM OmniDataTransform" --target-org myorg
 sf data query --query "SELECT Id, OmniProcessId, Name, Type, PropertySetConfig FROM OmniProcessElement WHERE OmniProcessId = '{process_id}'" \
   --target-org myorg --json
 
-# Get FlexCard definitions (for data source parsing)
-sf data query --query "SELECT Id, Name, Definition FROM OmniUiCard WHERE IsActive = true" \
+# Get FlexCard data sources (for dependency parsing)
+sf data query --query "SELECT Id, Name, DataSourceConfig FROM OmniUiCard WHERE IsActive = true" \
   --target-org myorg --json
 
 # Get Data Mapper items (for object dependencies)
-sf data query --query "SELECT Id, OmniDataTransformId, InputObjectName, OutputObjectName FROM OmniDataTransformItem" \
+sf data query --query "SELECT Id, OmniDataTransformationId, InputObjectName, OutputObjectName FROM OmniDataTransformItem" \
   --target-org myorg --json
 ```
 
@@ -449,8 +454,10 @@ sf data query --query "SELECT Id, OmniDataTransformId, InputObjectName, OutputOb
 - **Dependencies**: Requires `sf` CLI with org authentication. Optional: sf-diagram-mermaid for styled visualization.
 - **Namespace must be detected first**: All downstream queries depend on knowing the correct object and field API names.
 - **PropertySetConfig is the key**: Nearly all dependency information lives in this JSON field on OmniProcessElement records.
-- **Definition JSON for FlexCards**: Data sources, child cards, and action references are embedded in the FlexCard Definition field.
-- **Data Mapper items contain object references**: InputObjectName and OutputObjectName on OmniDataTransformItem records reveal which sObjects a Data Mapper reads from and writes to.
+- **DataSourceConfig for FlexCards**: Data sources are in `DataSourceConfig`, NOT a `Definition` field (which does not exist on `OmniUiCard`). Card layout/states are in `PropertySetConfig`.
+- **Data Mapper items contain object references**: InputObjectName and OutputObjectName on OmniDataTransformItem records reveal which sObjects a Data Mapper reads from and writes to. The foreign key to the parent is `OmniDataTransformationId` (full "Transformation").
+- **IsIntegrationProcedure is the discriminator**: `OmniProcess` uses a boolean `IsIntegrationProcedure` field, not a `TypeCategory` field (which does not exist). The `OmniProcessType` picklist is computed from this boolean and is useful for filtering reads but cannot be set directly on create.
+- **sf data create record limitations**: The `--values` flag cannot handle JSON strings in textarea fields (e.g., PropertySetConfig). Use `sf api request rest --method POST --body @file.json` instead for records with JSON configuration.
 - **Install related skills**: `/plugin install github:Jaganpro/sf-skills/sf-datamapper`, `/plugin install github:Jaganpro/sf-skills/sf-integration-procedure`, `/plugin install github:Jaganpro/sf-skills/sf-omniscript`, `/plugin install github:Jaganpro/sf-skills/sf-flexcard`
 
 ---

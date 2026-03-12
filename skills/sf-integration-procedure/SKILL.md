@@ -12,13 +12,11 @@ description: >
   DO NOT TRIGGER when: building OmniScripts (use sf-omniscript), creating Data Mappers
   directly (use sf-datamapper), or analyzing cross-component dependencies
   (use sf-omnistudio-analyze).
-version: 1.0
 license: MIT
 metadata:
+  version: "1.0.0"
   author: "weytani"
   scoring: "110 points across 6 categories"
-  last_validated: "2026-03-06"
-tags: [salesforce, omnistudio, integration-procedure, server-side, orchestration]
 ---
 
 # OmniStudio Integration Procedure Creation and Validation
@@ -27,7 +25,7 @@ Expert OmniStudio Integration Procedure (IP) builder with deep knowledge of serv
 
 ## Quick Reference
 
-**Scoring**: 110 points across 6 categories. Minimum 88 (80%) for deployment.
+**Scoring**: 110 points across 6 categories. **Thresholds**: ✅ 90+ (Deploy) | ⚠️ 67-89 (Review) | ❌ <67 (Block - fix required)
 
 ---
 
@@ -57,7 +55,9 @@ Data Mappers referenced by the IP must exist FIRST. Build and deploy DataRaptors
 | **Caching** | IPs support platform cache for read-heavy orchestrations. Set `cacheType` and `cacheTTL` in the procedure's PropertySet. Avoid caching procedures that perform DML. |
 | **Versioning** | Type/SubType pairs uniquely identify an IP. Use SubType for versioning (e.g., `Type=AccountOnboarding`, `SubType=v2`). Only one version can be active at a time per Type/SubType. |
 
-**Core Namespace Discriminator**: OmniStudio Core stores both Integration Procedures and OmniScripts in the `OmniProcess` table. The filter `OmniProcessType='Integration Procedure'` is REQUIRED to query IPs specifically. Without it, queries return mixed results.
+**Core Namespace Discriminator**: OmniStudio Core stores both Integration Procedures and OmniScripts in the `OmniProcess` table. Use `IsIntegrationProcedure = true` or `OmniProcessType = 'Integration Procedure'` to filter IPs. Without a filter, queries return mixed results.
+
+> **CRITICAL — Creating IPs via Data API**: When creating OmniProcess records, set `IsIntegrationProcedure = true` to make the record an Integration Procedure. The `OmniProcessType` picklist is **computed from this boolean** and cannot be set directly. Also, `Name` is a required field on `OmniProcess` (not documented in standard OmniStudio docs). Use `sf api request rest --method POST --body @file.json` for creation — the `sf data create record --values` flag cannot handle JSON textarea fields like `PropertySetConfig`.
 
 ---
 
@@ -210,10 +210,10 @@ Test each element individually before testing the full chain:
 
 ```bash
 # Query active Integration Procedures
-sf data query -q "SELECT Id,Name,Type,SubType,IsActive FROM OmniProcess WHERE IsActive=true AND OmniProcessType='Integration Procedure'" -o <org>
+sf data query -q "SELECT Id,Name,Type,SubType,IsActive FROM OmniProcess WHERE IsActive=true AND IsIntegrationProcedure=true" -o <org>
 
 # Query all Integration Procedures (including inactive)
-sf data query -q "SELECT Id,Name,Type,SubType,IsActive,LastModifiedDate FROM OmniProcess WHERE OmniProcessType='Integration Procedure' ORDER BY LastModifiedDate DESC" -o <org>
+sf data query -q "SELECT Id,Name,Type,SubType,IsActive,LastModifiedDate FROM OmniProcess WHERE IsIntegrationProcedure=true ORDER BY LastModifiedDate DESC" -o <org>
 
 # Retrieve an Integration Procedure
 sf project retrieve start -m OmniIntegrationProcedure:<Name> -o <org>
@@ -225,7 +225,7 @@ sf project deploy start -m OmniIntegrationProcedure:<Name> -o <org>
 sf project deploy start -m OmniIntegrationProcedure:<Name> -o <org> --dry-run
 ```
 
-**Core Namespace Note**: The `OmniProcessType='Integration Procedure'` filter is REQUIRED. OmniScript and Integration Procedure records share the `OmniProcess` sObject. Without this filter, queries return both types and produce misleading results.
+**Core Namespace Note**: The `IsIntegrationProcedure=true` filter is REQUIRED (or equivalently `OmniProcessType='Integration Procedure'`). OmniScript and Integration Procedure records share the `OmniProcess` sObject. Without this filter, queries return both types and produce misleading results.
 
 ---
 
@@ -264,4 +264,6 @@ sf project deploy start -m OmniIntegrationProcedure:<Name> -o <org> --dry-run
 
 ## Notes
 
-**Dependencies** (optional): sf-deploy, sf-datamapper, sf-omnistudio-analyze | **API**: 66.0 | **Mode**: Strict (warnings block) | See `references/best-practices.md` and `references/element-types.md` for detailed guidance.
+**Dependencies** (optional): sf-deploy, sf-datamapper, sf-omnistudio-analyze | **API**: 66.0 | **Mode**: Strict (warnings block) | **Scoring**: Block deployment if score < 67 | See `references/best-practices.md` and `references/element-types.md` for detailed guidance.
+
+**Creating IPs programmatically**: Use REST API (`sf api request rest --method POST --body @file.json`). Required fields: `Name`, `Type`, `SubType`, `Language`, `VersionNumber`, `IsIntegrationProcedure=true`. Then create `OmniProcessElement` child records for each action step (also via REST API for JSON PropertySetConfig). Activate by setting `IsActive=true` after all elements are created.

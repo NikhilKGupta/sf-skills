@@ -1,3 +1,4 @@
+<!-- Parent: sf-flexcard/SKILL.md -->
 <!-- ABOUTME: Data binding reference for OmniStudio FlexCards covering IP data sources, field mapping, and error handling. -->
 <!-- ABOUTME: Covers single and multi-source cards, conditional rendering, and troubleshooting failed data sources. -->
 

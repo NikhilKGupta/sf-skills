@@ -1,3 +1,4 @@
+<!-- Parent: sf-omnistudio-analyze/SKILL.md -->
 <!-- ABOUTME: Reference for how OmniStudio components reference each other across types. -->
 <!-- ABOUTME: Covers element parsing from PropertySetConfig, FlexCard definitions, and circular detection. -->
 

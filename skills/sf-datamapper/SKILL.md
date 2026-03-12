@@ -10,13 +10,11 @@ description: >
   DO NOT TRIGGER when: building Integration Procedures (use sf-integration-procedure),
   authoring OmniScripts (use sf-omniscript), or analyzing cross-component dependencies
   (use sf-omnistudio-analyze).
-version: 1.0
 license: MIT
 metadata:
+  version: "1.0.0"
   author: "weytani"
   scoring: "100 points across 5 categories"
-  last_validated: "2026-03-06"
-tags: [salesforce, omnistudio, datamapper, dataraptor, extract, transform, load, turbo-extract]
 ---
 
 # OmniStudio Data Mapper Creation and Validation
@@ -185,7 +183,7 @@ Next Steps: Test in Integration Procedure, verify data output, monitor performan
 | **Performance** | 15 | Bounded queries with LIMIT/filters; Turbo Extract for read-heavy scenarios; minimal relationship depth; indexed filter fields |
 | **Documentation** | 15 | Description on OmniDataTransform record; field mapping rationale documented; consuming components identified |
 
-**Thresholds**: 80+ (Deploy) | 60-79 (Review) | <60 (Block - fix required)
+**Thresholds**: ✅ 90+ (Deploy) | ⚠️ 67-89 (Review) | ❌ <67 (Block - fix required)
 
 ---
 
@@ -252,10 +250,13 @@ sf project deploy start -m OmniDataTransform:<Name> -o <org>
 
 - **Metadata Type**: OmniDataTransform (not DataRaptor -- legacy name deprecated)
 - **API Version**: Requires OmniStudio managed package or Industries Cloud
-- **Scoring**: Block deployment if score < 60
+- **Scoring**: Block deployment if score < 67
 - **Dependencies** (optional): sf-deploy, sf-metadata, sf-omnistudio-analyze, sf-integration-procedure
 - **Turbo Extract Limitations**: No formula fields, no related lists, no aggregate queries, no polymorphic fields
 - **Activation**: Data Mappers must be activated after deployment to be callable from Integration Procedures
+- **Draft DMs can't be retrieved**: `sf project retrieve start -m OmniDataTransform:<Name>` only works for active Data Mappers. Draft DMs return "Entity cannot be found".
+- **Creating via Data API**: Use `sf api request rest --method POST --body @file.json` to create OmniDataTransform and OmniDataTransformItem records. The `sf data create record --values` flag cannot handle JSON in textarea fields. Write the JSON body to a temp file first.
+- **Foreign key field name**: The parent lookup on `OmniDataTransformItem` is `OmniDataTransformationId` (full word "Transformation"), not `OmniDataTransformId`.
 
 ---
 
