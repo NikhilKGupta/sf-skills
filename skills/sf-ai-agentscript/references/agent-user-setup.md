@@ -284,6 +284,13 @@ A valid Service Agent user must satisfy all of these:
 
 This catches cases where `sf agent validate` passes but `sf agent publish` later fails because the configured user is missing, inactive, `AutomatedProcess`, or not on the **Einstein Agent User** profile.
 
+**Recommended native sequence:**
+1. `sf agent validate authoring-bundle --api-name <AgentName> -o TARGET_ORG --json`
+2. Run the exact `sf data query` above for `default_agent_user`
+3. Smoke-test with `sf agent preview start` / `send` / `end`
+4. Publish with `sf agent publish authoring-bundle`
+5. If publish fails after validate + preview pass, retry with `--skip-retrieve`
+
 ---
 
 ### Step 6: Deploy, Test, Publish & Activate

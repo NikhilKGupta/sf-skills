@@ -268,6 +268,13 @@ For Service Agents, confirm all four before publish:
 - `UserType != AutomatedProcess`
 - `Profile.Name = 'Einstein Agent User'`
 
+**Native pre-publish checklist:**
+1. `sf agent validate authoring-bundle --api-name MyAgent -o TARGET_ORG --json`
+2. `sf data query` the exact `default_agent_user` from the `.agent` file
+3. `sf agent preview start` / `send` / `end` against the authoring bundle
+4. `sf agent publish authoring-bundle --api-name MyAgent -o TARGET_ORG --json`
+5. If publish fails after validate + preview pass, retry with `--skip-retrieve`
+
 ### Phase 3.5: Preview Smoke Test Loop (Pre-Publish)
 
 > **When**: After Phase 3 validation passes, before Phase 5 publish.
