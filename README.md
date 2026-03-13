@@ -20,79 +20,16 @@ A collection of reusable skills for **Agentic Salesforce Development**, enabling
 
 ## ✨ Available Skills
 
-### 💻 Development
+The library is organized by capability area so you can scan quickly, pick the right entry point, and jump straight into the relevant skill folder.
 
-- **[sf-apex](skills/sf-apex/)** — Apex generation, TAF patterns, LSP validation
-- **[sf-flow](skills/sf-flow/)** — Flow creation & bulk validation
-- **[sf-lwc](skills/sf-lwc/)** — Lightning Web Components, Jest tests, LMS
-- **[sf-soql](skills/sf-soql/)** — Natural language → SOQL, query optimization
-
-### 🧪 Quality
-
-- **[sf-testing](skills/sf-testing/)** — Apex test runner, coverage, bulk testing
-- **[sf-debug](skills/sf-debug/)** — Debug log analysis, governor limit fixes
-
-### 📦 Foundation
-
-- **[sf-metadata](skills/sf-metadata/)** — Metadata gen & org queries
-- **[sf-data](skills/sf-data/)** — SOQL & test data factories
-- **[sf-permissions](skills/sf-permissions/)** — Permission Set analysis, "Who has X?"
-
-### 🔌 Integration
-
-- **[sf-connected-apps](skills/sf-connected-apps/)** — OAuth apps & ECAs
-- **[sf-integration](skills/sf-integration/)** — Callouts, Events, CDC
-
-### 🤖 AI & Automation
-
-- **[sf-ai-agentscript](skills/sf-ai-agentscript/)** — Agent Script DSL, FSM patterns
-- **[sf-ai-agentforce-persona](skills/sf-ai-agentforce-persona/)** — Deep persona design, identity framework, Agent Builder encoding
-- **[sf-ai-agentforce-observability](skills/sf-ai-agentforce-observability/)** — STDM + Builder trace capture, trace-test workflows, session analysis
-- **[sf-ai-agentforce-testing](skills/sf-ai-agentforce-testing/)** — Agent test specs, agentic fix loops
-- **[sf-ai-agentforce](skills/sf-ai-agentforce/)** — Agent Builder, PromptTemplate, Models API
-
-### 🛠️ DevOps & Tooling
-
-- **[sf-deploy](skills/sf-deploy/)** — CI/CD automation (sf CLI v2)
-- **[sf-diagram-mermaid](skills/sf-diagram-mermaid/)** — Mermaid diagrams & ERD
-- **[sf-diagram-nanobananapro](skills/sf-diagram-nanobananapro/)** — Visual ERD, LWC mockups
-
-## 🤖 Agent Team
-
-Seven specialized Claude Code agents for Salesforce implementations, installed to `~/.claude/agents/`.
-
-### FDE Team (Agent-Focused)
-
-| Agent | Role | Mode | Key Skills |
-|-------|------|------|------------|
-| **fde-strategist** | Orchestrator — plans, researches, delegates | `plan` | sf-ai-agentforce, sf-diagram-mermaid |
-| **fde-engineer** | Agent config, metadata, Apex, Agent Scripts | `acceptEdits` | sf-ai-agentforce, sf-ai-agentscript |
-| **fde-experience-specialist** | Conversation design, persona, UX, LWC | `acceptEdits` | sf-ai-agentforce-persona, sf-lwc |
-
-### Cross-Cutting (Serve Both Teams)
-
-| Agent | Role | Mode | Key Skills |
-|-------|------|------|------------|
-| **fde-qa-engineer** | Testing (agent + platform), debug, observability | `acceptEdits` | sf-testing, sf-ai-agentforce-testing |
-| **fde-release-engineer** | Deployment, Connected Apps, CI/CD | `acceptEdits` | sf-deploy, sf-connected-apps |
-
-### PS Team (Platform Infrastructure)
-
-| Agent | Role | Mode | Key Skills |
-|-------|------|------|------------|
-| **ps-technical-architect** | Apex, integrations, data, LWC, performance | `acceptEdits` | sf-apex, sf-integration, sf-lwc + 5 more |
-| **ps-solution-architect** | Metadata, Flows, permissions, diagrams | `acceptEdits` | sf-metadata, sf-flow, sf-permissions + 2 more |
-
-### Hierarchy
-
-```
-fde-strategist (orchestrator — plans, researches, delegates)
-├── FDE: fde-engineer, fde-experience-specialist
-├── QA/Release: fde-qa-engineer, fde-release-engineer
-└── PS: ps-technical-architect, ps-solution-architect
-```
-
-The strategist spawns up to 4 concurrent workers via `Task()`. PS agents have `WebSearch` and `WebFetch` for self-directed Salesforce docs lookup.
+| Area | Skills | Best for |
+|---|---|---|
+| 💻 **Development** | [sf-apex](skills/sf-apex/), [sf-flow](skills/sf-flow/), [sf-lwc](skills/sf-lwc/), [sf-soql](skills/sf-soql/) | Apex, Flow, LWC, and query development |
+| 🧪 **Quality** | [sf-testing](skills/sf-testing/), [sf-debug](skills/sf-debug/) | Test execution, coverage analysis, and debug-log troubleshooting |
+| 📦 **Foundation** | [sf-metadata](skills/sf-metadata/), [sf-data](skills/sf-data/), [sf-permissions](skills/sf-permissions/) | Metadata generation, data operations, and access analysis |
+| 🔌 **Integration** | [sf-connected-apps](skills/sf-connected-apps/), [sf-integration](skills/sf-integration/) | OAuth, External Client Apps, Named Credentials, callouts, and events |
+| 🤖 **AI & Automation** | [sf-ai-agentscript](skills/sf-ai-agentscript/), [sf-ai-agentforce](skills/sf-ai-agentforce/), [sf-ai-agentforce-testing](skills/sf-ai-agentforce-testing/), [sf-ai-agentforce-observability](skills/sf-ai-agentforce-observability/), [sf-ai-agentforce-persona](skills/sf-ai-agentforce-persona/) | Agent design, Agent Script, testing, observability, and persona design |
+| 🚀 **DevOps & Tooling** | [sf-deploy](skills/sf-deploy/), [sf-diagram-mermaid](skills/sf-diagram-mermaid/), [sf-diagram-nanobananapro](skills/sf-diagram-nanobananapro/) | Deployment automation, Mermaid diagrams, and visual artifacts |
 
 ## 🚀 Installation
 
@@ -207,28 +144,6 @@ python3 ~/.claude/sf-skills-install.py --profile delete old
 | **PostToolUse** | Validator dispatcher for file-aware checks after Write/Edit |
 
 For deeper install and hook internals, see [tools/README.md](tools/README.md) and [shared/hooks/README.md](shared/hooks/README.md).
-
-## 🎬 Video Tutorials
-
-| Video | Description |
-|-------|-------------|
-| [How to Add/Install Skills](https://youtu.be/a38MM8PBTe4) | Install the sf-skills marketplace and add skills to Claude Code |
-| [Skills Demo & Walkthrough](https://www.youtube.com/watch?v=gW2RP96jdBc) | Live demo of Apex, Flow, Metadata, and Agentforce skills in action |
-
-## 🔗 Skill Architecture
-
-![Skill Architecture Diagram](https://github.com/user-attachments/assets/dc5ada83-6555-4b40-8b46-5dce5f8851ad)
-
-<details>
-<summary><b>🚀 Deployment Note</b></summary>
-
-**Use the sf-deploy skill for all Salesforce deployments:**
-
-```
-Use the sf-deploy skill: "Deploy to [org]"
-```
-
-</details>
 
 ## ⚙️ Claude Code Features
 
@@ -352,6 +267,141 @@ Skills leverage official Salesforce LSP servers for real-time syntax validation 
 **Prerequisites:** See LSP table in Prerequisites section. LWC uses standalone npm package; Apex and Agent Script require VS Code extensions.
 
 Hooks provide **advisory feedback** — they inform but don't block operations.
+
+## 🤖 Agent Team
+
+Seven specialized Claude Code agents for Salesforce implementations, installed to `~/.claude/agents/`.
+
+### FDE Team (Agent-Focused)
+
+| Agent | Role | Mode | Key Skills |
+|-------|------|------|------------|
+| **fde-strategist** | Orchestrator — plans, researches, delegates | `plan` | sf-ai-agentforce, sf-diagram-mermaid |
+| **fde-engineer** | Agent config, metadata, Apex, Agent Scripts | `acceptEdits` | sf-ai-agentforce, sf-ai-agentscript |
+| **fde-experience-specialist** | Conversation design, persona, UX, LWC | `acceptEdits` | sf-ai-agentforce-persona, sf-lwc |
+
+### Cross-Cutting (Serve Both Teams)
+
+| Agent | Role | Mode | Key Skills |
+|-------|------|------|------------|
+| **fde-qa-engineer** | Testing (agent + platform), debug, observability | `acceptEdits` | sf-testing, sf-ai-agentforce-testing |
+| **fde-release-engineer** | Deployment, Connected Apps, CI/CD | `acceptEdits` | sf-deploy, sf-connected-apps |
+
+### PS Team (Platform Infrastructure)
+
+| Agent | Role | Mode | Key Skills |
+|-------|------|------|------------|
+| **ps-technical-architect** | Apex, integrations, data, LWC, performance | `acceptEdits` | sf-apex, sf-integration, sf-lwc + 5 more |
+| **ps-solution-architect** | Metadata, Flows, permissions, diagrams | `acceptEdits` | sf-metadata, sf-flow, sf-permissions + 2 more |
+
+### Hierarchy
+
+```
+fde-strategist (orchestrator — plans, researches, delegates)
+├── FDE: fde-engineer, fde-experience-specialist
+├── QA/Release: fde-qa-engineer, fde-release-engineer
+└── PS: ps-technical-architect, ps-solution-architect
+```
+
+The strategist spawns up to 4 concurrent workers via `Task()`. PS agents have `WebSearch` and `WebFetch` for self-directed Salesforce docs lookup.
+
+## 🔗 Skill Architecture
+
+This is the working mental model for the ecosystem: foundation and integration skills support build work, quality skills reinforce delivery, AI skills layer on top for agent creation and testing, and `sf-deploy` carries the finished assets across environments.
+
+```mermaid
+flowchart TD
+    subgraph FOUNDATION["📦 Foundation"]
+        META["sf-metadata"]
+        DATA["sf-data"]
+        PERM["sf-permissions"]
+    end
+
+    subgraph INTEGRATION["🔌 Integration"]
+        CONN["sf-connected-apps"]
+        INT["sf-integration"]
+    end
+
+    subgraph DEVELOPMENT["💻 Development"]
+        APEX["sf-apex"]
+        FLOW["sf-flow"]
+        LWC["sf-lwc"]
+        SOQL["sf-soql"]
+    end
+
+    subgraph QUALITY["🧪 Quality"]
+        TEST["sf-testing"]
+        DEBUG["sf-debug"]
+    end
+
+    subgraph AI["🤖 AI & Automation"]
+        SCRIPT["sf-ai-agentscript"]
+        AGENT["sf-ai-agentforce"]
+        ATEST["sf-ai-agentforce-testing"]
+        OBS["sf-ai-agentforce-observability"]
+        PERSONA["sf-ai-agentforce-persona"]
+    end
+
+    subgraph DEVOPS["🚀 DevOps & Tooling"]
+        DEPLOY["sf-deploy"]
+        MERMAID["sf-diagram-mermaid"]
+        VISUAL["sf-diagram-nanobananapro"]
+    end
+
+    META -->|schema + metadata context| APEX
+    META -->|object model| FLOW
+    DATA -->|test data + fixtures| TEST
+    PERM -->|access model| AGENT
+    CONN -->|OAuth + ECA setup| INT
+    INT -->|callouts + event patterns| APEX
+    INT -->|service orchestration| FLOW
+    SOQL -->|query patterns| DATA
+    TEST -->|validates| APEX
+    TEST -->|validates| FLOW
+    DEBUG -->|troubleshoots| APEX
+    SCRIPT -->|deterministic flows| AGENT
+    PERSONA -->|voice + behavior| AGENT
+    ATEST -->|test specs + fix loops| AGENT
+    OBS -->|trace-test + session analysis| AGENT
+    MERMAID -->|ERD + architecture docs| INT
+    VISUAL -->|mockups + visual assets| LWC
+    DEPLOY -->|ships| APEX
+    DEPLOY -->|ships| FLOW
+    DEPLOY -->|ships| LWC
+    DEPLOY -->|ships| AGENT
+
+    classDef foundation fill:#e0f2fe,stroke:#0284c7,color:#111827,stroke-width:1.5px;
+    classDef integration fill:#fef3c7,stroke:#d97706,color:#111827,stroke-width:1.5px;
+    classDef development fill:#e0e7ff,stroke:#4f46e5,color:#111827,stroke-width:1.5px;
+    classDef quality fill:#ecfccb,stroke:#65a30d,color:#111827,stroke-width:1.5px;
+    classDef ai fill:#fce7f3,stroke:#be185d,color:#111827,stroke-width:1.5px;
+    classDef devops fill:#dcfce7,stroke:#059669,color:#111827,stroke-width:1.5px;
+
+    class META,DATA,PERM foundation;
+    class CONN,INT integration;
+    class APEX,FLOW,LWC,SOQL development;
+    class TEST,DEBUG quality;
+    class SCRIPT,AGENT,ATEST,OBS,PERSONA ai;
+    class DEPLOY,MERMAID,VISUAL devops;
+
+    style FOUNDATION fill:#f6fbff,stroke:#0284c7,stroke-width:2px,color:#111827
+    style INTEGRATION fill:#fffbeb,stroke:#d97706,stroke-width:2px,color:#111827
+    style DEVELOPMENT fill:#f5f7ff,stroke:#4f46e5,stroke-width:2px,color:#111827
+    style QUALITY fill:#f7fee7,stroke:#65a30d,stroke-width:2px,color:#111827
+    style AI fill:#fff1f7,stroke:#be185d,stroke-width:2px,color:#111827
+    style DEVOPS fill:#f0fdf4,stroke:#059669,stroke-width:2px,color:#111827
+```
+
+> **Read this as a workflow map, not a dependency graph.** The edges highlight the most common collaboration paths between skills.
+>
+> **Deployment path:** use [sf-deploy](skills/sf-deploy/) for Salesforce deployments across Apex, Flow, LWC, metadata, and Agentforce assets.
+
+## 🎬 Video Tutorials
+
+| Video | Description |
+|-------|-------------|
+| [How to Add/Install Skills](https://youtu.be/a38MM8PBTe4) | Install the sf-skills marketplace and add skills to Claude Code |
+| [Skills Demo & Walkthrough](https://www.youtube.com/watch?v=gW2RP96jdBc) | Live demo of Apex, Flow, Metadata, and Agentforce skills in action |
 
 ## 🔧 Prerequisites
 
@@ -528,6 +578,30 @@ Hooks provide **advisory feedback** — they inform but don't block operations.
 </details>
 
 <details>
+<summary><h2>🤖 Supported Agentic Coding Tools</h2></summary>
+
+### CLI Compatibility
+
+All skills follow the [Agent Skills open standard](https://agentskills.io). Install with `npx skills add` for any supported agent:
+
+```bash
+npx skills add Jaganpro/sf-skills
+```
+
+| Tool | Status | Install Method | |
+|------|--------|----------------|--|
+| **Claude Code CLI** | ✅ Full Support | `npx skills add` or bash installer | ![Claude](https://img.shields.io/badge/Anthropic-Claude_Code-191919?logo=anthropic&logoColor=white) |
+| **OpenCode CLI** | ✅ Compatible | `npx skills add` | ![OpenCode](https://img.shields.io/badge/Open-Code-4B32C3?logo=github&logoColor=white) |
+| **Codex CLI** | ✅ Compatible | `npx skills add` | ![OpenAI](https://img.shields.io/badge/OpenAI-Codex-412991?logo=openai&logoColor=white) |
+| **Gemini CLI** | ✅ Compatible | `npx skills add` | ![Google](https://img.shields.io/badge/Google-Gemini_CLI-4285F4?logo=google&logoColor=white) |
+| **Amp CLI** | ✅ Compatible | `npx skills add` or `.claude/skills/` | ![Amp](https://img.shields.io/badge/Sourcegraph-Amp-FF5543?logo=sourcegraph&logoColor=white) |
+| **Droid CLI** | ✅ Compatible | `npx skills add` | ![Factory](https://img.shields.io/badge/Factory.ai-Droid-6366F1?logo=robot&logoColor=white) |
+
+> 🤝 **Call for Volunteers!** This repo is community-driven. We need testers on different CLIs — [open an issue](https://github.com/Jaganpro/sf-skills/issues) to get started.
+
+</details>
+
+<details>
 <summary><h2>🗺️ Roadmap</h2></summary>
 
 ### Naming Convention
@@ -586,30 +660,6 @@ sf-industry-{name}        # Industries (healthcare, finserv)
 | 💵 | `sf-industry-revenue` | CPQ, Billing, Revenue Lifecycle | 📋 Planned |
 
 **Total: 29 skills** (19 skills ✅ live, 10 planned 📋)
-
-</details>
-
-<details>
-<summary><h2>🤖 Supported Agentic Coding Tools</h2></summary>
-
-### CLI Compatibility
-
-All skills follow the [Agent Skills open standard](https://agentskills.io). Install with `npx skills add` for any supported agent:
-
-```bash
-npx skills add Jaganpro/sf-skills
-```
-
-| Tool | Status | Install Method | |
-|------|--------|----------------|--|
-| **Claude Code CLI** | ✅ Full Support | `npx skills add` or bash installer | ![Claude](https://img.shields.io/badge/Anthropic-Claude_Code-191919?logo=anthropic&logoColor=white) |
-| **OpenCode CLI** | ✅ Compatible | `npx skills add` | ![OpenCode](https://img.shields.io/badge/Open-Code-4B32C3?logo=github&logoColor=white) |
-| **Codex CLI** | ✅ Compatible | `npx skills add` | ![OpenAI](https://img.shields.io/badge/OpenAI-Codex-412991?logo=openai&logoColor=white) |
-| **Gemini CLI** | ✅ Compatible | `npx skills add` | ![Google](https://img.shields.io/badge/Google-Gemini_CLI-4285F4?logo=google&logoColor=white) |
-| **Amp CLI** | ✅ Compatible | `npx skills add` or `.claude/skills/` | ![Amp](https://img.shields.io/badge/Sourcegraph-Amp-FF5543?logo=sourcegraph&logoColor=white) |
-| **Droid CLI** | ✅ Compatible | `npx skills add` | ![Factory](https://img.shields.io/badge/Factory.ai-Droid-6366F1?logo=robot&logoColor=white) |
-
-> 🤝 **Call for Volunteers!** This repo is community-driven. We need testers on different CLIs — [open an issue](https://github.com/Jaganpro/sf-skills/issues) to get started.
 
 </details>
 
